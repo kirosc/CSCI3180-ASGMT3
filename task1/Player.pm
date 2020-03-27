@@ -6,13 +6,14 @@ sub new {
   my $class = shift;
   my $self = {
     _name => shift,
-    _cards => [],
-  }
+    _cards => shift,
+  };
+  return bless $self, $class;
 }
 
 sub getCards {
   my ( $self, $card ) = @_;
-  push @{$self->{_cards}}, card;
+  push @{$self->{_cards}}, $card;
   return @{$self->{_cards}}[-1];
 }
 
