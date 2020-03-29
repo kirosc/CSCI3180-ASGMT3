@@ -45,7 +45,7 @@ class Bank:
         print("Bank ", end='')
 
     def stepOn(self):
-        print("You received $2,000 from the Bank!")
+        print("You received $2000 from the Bank!")
         receiveMoney(2000, 0)
 
 class Jail:
@@ -66,7 +66,7 @@ class Jail:
                     Player.prison_rounds = 1
                     pay(1000, 0.1, cur_player)
                 else:
-                    print("You do not have enough money!")
+                    print("You do not have enough money to reduce the prison round!")
                     choice = None
             elif choice == "n":
                 Player.prison_rounds = 2
@@ -185,7 +185,7 @@ def printGameBoard():
     print("-" * (10 * (num_players + 6)))
 
 
-def termination_check():
+def terminationCheck():
     if players[0].money == 0 or players[1].money == 0:
         return False
     return True
@@ -204,7 +204,7 @@ def main():
     global cur_round
     global cur_player_idx
 
-    while termination_check():
+    while terminationCheck():
         cur_player_idx = cur_round % 2
         cur_player = players[cur_player_idx]
         choice = None
@@ -213,13 +213,16 @@ def main():
         for player in players:
             player.printAsset()
 
-        print("Player {}'s term.".format(cur_player.name))
+        print("Player {}'s turn.".format(cur_player.name))
         pay(200, 0, cur_player)
         while choice != "y" and choice != "n":
             choice = input("Pay $500 to throw two dice? [y/n]")
             if choice == "y":
-                num_dices = 2
-                pay(500, 0.05, cur_player)
+                if haveEnoughBalance(500, 0.05, cur_player):
+                    num_dices = 2
+                    pay(500, 0.05, cur_player)
+                else:
+                    print("You do not have enough money to throw two dice!”, and the player cannot throw two dice.")
             elif choice == "n":
                 num_dices = 1
         points_of_dice = throwDice()

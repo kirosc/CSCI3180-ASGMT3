@@ -16,7 +16,7 @@ sub new {
   return bless $self, $class;
 }
 
-sub set_players {
+sub setPlayers {
   my ( $self, $players_name ) = @_;
   my $numberOfPlayers = 0+@{$players_name};
   # Cards can't be divided evenly
@@ -65,7 +65,7 @@ sub showCards {
   print join (" ", @{$self->{_cards}})."\n";
 }
 
-sub start_game {
+sub startGame {
   my $self = shift;
   my $players = $self->{_player};
   print join "", "There ", 0+@{$players},  " players in the game:\n";
