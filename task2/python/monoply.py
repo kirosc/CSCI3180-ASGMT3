@@ -56,18 +56,20 @@ class Jail:
         print("Jail ", end='')
 
     def stepOn(self):
+        if cur_player.num_rounds_in_jail > 0:
+            return
         choice = None
         while choice != "y" and choice != "n":
             choice = input("Pay $1000 to reduce the prison round to 1? [y/n]\n")
             if choice == "y":
-                if haveEnoughBalance(1000, 0.1):
-                    cur_player.prison_rounds = 1
-                    pay(1000, 0.1)
+                if haveEnoughBalance(1000, 0.1, cur_player):
+                    Player.prison_rounds = 1
+                    pay(1000, 0.1, cur_player)
                 else:
                     print("You do not have enough money!")
                     choice = None
             elif choice == "n":
-                cur_player.prison_rounds = 2
+                Player.prison_rounds = 2
 
         cur_player.putToJail()
 
@@ -89,16 +91,16 @@ class Land:
             print("%s:Lv%d" % (self.owner.name, self.level), end="")
     
     def buyLand(self):
-        if haveEnoughBalance(land_price, 0.1):
+        if haveEnoughBalance(self.land_price, 0.1, cur_player):
             self.owner = cur_player
-            pay(land_price, 0.1)
+            pay(self.land_price, 0.1, cur_player)
         else:
             print("You do not have enough money to buy the land!")
     
     def upgradeHouse(self):
         upgradeFee = self.upgrade_fee[self.level]
-        if haveEnoughBalance(upgradeFee, 0.1):
-            pay(upgradeFee, 0.1);
+        if haveEnoughBalance(upgradeFee, 0.1, cur_player):
+            pay(upgradeFee, 0.1, cur_player)
             self.level += 1
         else:
             print("You do not have enough money to upgrade the land!")
@@ -107,17 +109,17 @@ class Land:
         toll = self.toll[self.level]
         taxRate = self.tax_rate[self.level]
         toll = min(toll, cur_player.money)
-        pay(toll, 0)
+        pay(toll, 0, cur_player)
         receiveMoney(toll, taxRate, self.owner)
         self.owner.payDue()
 
     def stepOn(self):
         choice = None
-        if self.owner == None:
+        if self.owner is None:
             while choice != "y" and choice != "n":
                 choice = input("Pay ${} to buy the land? [y/n]\n".format(self.land_price))
                 if choice == "y":
-                    self.upgradeHouse()
+                    self.buyLand()
         elif self.owner == cur_player:
             try:
                 upgradeFee = self.upgrade_fee[self.level]
@@ -128,7 +130,8 @@ class Land:
                 if choice == "y":
                     self.upgradeHouse()
         else:
-            print("You need to pay player {} ${}".format(self.owner, self.toll[self.level]))
+            print("You need to pay player {} ${}".format(self.owner.name, self.toll[self.level]))
+            self.chargeToll()
 
 
 
@@ -183,9 +186,8 @@ def printGameBoard():
 
 
 def termination_check():
-
-    # ...
-
+    if players[0].money == 0 or players[1].money == 0:
+        return False
     return True
 
 
@@ -203,32 +205,57 @@ def main():
     global cur_player_idx
 
     while termination_check():
+        cur_player_idx = cur_round % 2
+        cur_player = players[cur_player_idx]
+        choice = None
+
         printGameBoard()
         for player in players:
             player.printAsset()
 
-    # ...
+        print("Player {}'s term.".format(cur_player.name))
+        pay(200, 0, cur_player)
+        while choice != "y" and choice != "n":
+            choice = input("Pay $500 to throw two dice? [y/n]")
+            if choice == "y":
+                num_dices = 2
+                pay(500, 0.05, cur_player)
+            elif choice == "n":
+                num_dices = 1
+        points_of_dice = throwDice()
+        print("Points of dice: {}".format(points_of_dice))
+        cur_player.move(points_of_dice)
+        pos = cur_player.position
+        game_board[pos].stepOn()
+        cur_round += 1
+
+    winner = players[cur_round % 2]
+    print("Game over! winner: {}.".format(winner.name))
 
 # Custom methods below
 
+
 # Check if a player has enough money to pay the fee
-def haveEnoughBalance(amount, feeRate, player=cur_player):
-    total = amount * (1 + feeRate)
+def haveEnoughBalance(amount, fee_rate, player):
+    total = amount * (1 + fee_rate)
     return player.money >= total
 
+
 # Pay the fee for a player
-def pay(amount, feeRate, player=cur_player):
-    player.due = amount
-    player.handling_fee_rate = feeRate
+def pay(amount, fee_rate, player):
+    Player.due = amount
+    Player.handling_fee_rate = fee_rate
     player.payDue()
-    player.due = 0
+    Player.due = 0
+
 
 # Send money to a player
-def receiveMoney(amount, taxRate, player=cur_player):
-    player.income = amount
-    player.tax_rate = taxRate
+def receiveMoney(amount, tax_rate, player):
+    Player.income = amount
+    Player.tax_rate = tax_rate
     player.payDue()
-    player.income = 0
+    Player.income = 0
+
 
 if __name__ == '__main__':
     main()
