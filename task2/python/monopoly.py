@@ -47,6 +47,8 @@ class Bank:
         print("You received $2000 from the Bank!")
         receiveMoney(2000, 0, cur_player)
 
+        return
+
 
 class Jail:
     def __init__(self):
@@ -96,6 +98,8 @@ class Land:
             pay(self.land_price, 0.1, cur_player)
         else:
             print("You do not have enough money to buy the land!")
+
+        cur_player.payDue()
     
     def upgradeLand(self):
         upgradeFee = self.upgrade_fee[self.level]
@@ -104,12 +108,15 @@ class Land:
             self.level += 1
         else:
             print("You do not have enough money to upgrade the land!")
+
+        cur_player.payDue()
     
     def chargeToll(self):
         toll = self.toll[self.level]
         taxRate = self.tax_rate[self.level]
         toll = min(toll, cur_player.money)
         pay(toll, 0, cur_player)
+        cur_player.payDue()
         receiveMoney(toll, taxRate, self.owner)
         self.owner.payDue()
 
@@ -132,6 +139,8 @@ class Land:
         else:
             print("You need to pay player {} ${}".format(self.owner.name, self.toll[self.level]))
             self.chargeToll()
+
+        return
 
 
 
@@ -204,21 +213,23 @@ def main():
     global cur_player_idx
 
     while terminationCheck():
+        printGameBoard()
+        for player in players:
+            player.printAsset()
+
         cur_player_idx = cur_round % 2
         cur_player = players[cur_player_idx]
+
+        # Display game information
+        print("Player {}'s turn.".format(cur_player.name))
 
         # If in Jail
         if cur_player.num_rounds_in_jail > 0:
             pay(200, 0, cur_player)  # Still need to pay the fixed cost
             cur_player.move(0)
             cur_round += 1
+            print("Player {} is in jail.".format(cur_player.name))
             continue
-
-        # Display game information
-        printGameBoard()
-        for player in players:
-            player.printAsset()
-        print("Player {}'s turn.".format(cur_player.name))
 
         # Fixed cost of each round
         pay(200, 0, cur_player)
