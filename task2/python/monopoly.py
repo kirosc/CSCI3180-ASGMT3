@@ -36,7 +36,6 @@ class Player:
             self.position = (self.position + step) % 36
 
 
-
 class Bank:
     def __init__(self):
         pass
@@ -46,7 +45,8 @@ class Bank:
 
     def stepOn(self):
         print("You received $2000 from the Bank!")
-        receiveMoney(2000, 0)
+        receiveMoney(2000, 0, cur_player)
+
 
 class Jail:
     def __init__(self):
@@ -128,7 +128,7 @@ class Land:
             while choice != "y" and choice != "n":
                 choice = input("Pay ${} to upgrade the land? [y/n]\n".format(upgradeFee))
                 if choice == "y":
-                    self.upgradeHouse()
+                    self.upgradeLand()
         else:
             print("You need to pay player {} ${}".format(self.owner.name, self.toll[self.level]))
             self.chargeToll()
@@ -206,24 +206,37 @@ def main():
     while terminationCheck():
         cur_player_idx = cur_round % 2
         cur_player = players[cur_player_idx]
-        choice = None
 
+        # If in Jail
+        if cur_player.num_rounds_in_jail > 0:
+            pay(200, 0, cur_player)  # Still need to pay the fixed cost
+            cur_player.move(0)
+            cur_round += 1
+            continue
+
+        # Display game information
         printGameBoard()
         for player in players:
             player.printAsset()
-
         print("Player {}'s turn.".format(cur_player.name))
+
+        # Fixed cost of each round
         pay(200, 0, cur_player)
+
+        # Ask if player wants to throws two dice
+        choice = None
         while choice != "y" and choice != "n":
-            choice = input("Pay $500 to throw two dice? [y/n]")
+            choice = input("Pay $500 to throw two dice? [y/n]\n")
             if choice == "y":
                 if haveEnoughBalance(500, 0.05, cur_player):
                     num_dices = 2
                     pay(500, 0.05, cur_player)
                 else:
-                    print("You do not have enough money to throw two dice!”, and the player cannot throw two dice.")
+                    print("You do not have enough money to throw two dice!")
             elif choice == "n":
                 num_dices = 1
+
+        # Throw the dice
         points_of_dice = throwDice()
         print("Points of dice: {}".format(points_of_dice))
         cur_player.move(points_of_dice)
@@ -245,7 +258,7 @@ def haveEnoughBalance(amount, fee_rate, player):
 
 # Pay the fee for a player
 def pay(amount, fee_rate, player):
-    Player.due = amount
+    Player.due = min(player.money, amount)
     Player.handling_fee_rate = fee_rate
     player.payDue()
     Player.due = 0
