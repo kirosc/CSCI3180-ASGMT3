@@ -77,7 +77,7 @@ class Jail:
 class Land:
     land_price = 1000
     upgrade_fee = [1000, 2000, 5000]
-    toll = [500, 1000, 1500, 4000]
+    toll = [500, 1000, 1500, 3000]
     tax_rate = [0.1, 0.15, 0.2, 0.25]
 
     def __init__(self):
@@ -97,7 +97,7 @@ class Land:
         else:
             print("You do not have enough money to buy the land!")
     
-    def upgradeHouse(self):
+    def upgradeLand(self):
         upgradeFee = self.upgrade_fee[self.level]
         if haveEnoughBalance(upgradeFee, 0.1, cur_player):
             pay(upgradeFee, 0.1, cur_player)
@@ -142,7 +142,6 @@ cur_player_idx = 0
 cur_player = players[cur_player_idx]
 num_dices = 1
 cur_round = 0
-max_round = 100
 
 game_board = [
     Bank(), Land(), Land(), Land(), Land(), Land(), Land(), Land(), Land(), Jail(),
