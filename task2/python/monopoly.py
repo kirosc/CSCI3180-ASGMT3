@@ -222,17 +222,17 @@ def main():
 
         # Display game information
         print("Player {}'s turn.".format(cur_player.name))
+        
+        # Fixed cost of each round
+        pay(200, 0, cur_player)
 
         # If in Jail
         if cur_player.num_rounds_in_jail > 0:
-            pay(200, 0, cur_player)  # Still need to pay the fixed cost
             cur_player.move(0)
             cur_round += 1
             print("Player {} is in jail.".format(cur_player.name))
             continue
 
-        # Fixed cost of each round
-        pay(200, 0, cur_player)
 
         # Ask if player wants to throws two dice
         choice = None

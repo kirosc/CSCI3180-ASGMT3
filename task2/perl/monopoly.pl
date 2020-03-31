@@ -65,9 +65,10 @@ sub printGameBoard {
 }
 
 sub terminationCheck {
-
-    # ...
-
+    if ($players[0]->{money} == 0 || $players[0]->{money} == 0) {
+        return 0;
+    }
+    return 1;
 }
 
 sub throwDice {
@@ -85,9 +86,52 @@ sub main {
             $player->printAsset();
         }
 
-        # ...
+        $cur_player_idx = $cur_round % 2;
+        $cur_player = $players[$cur_player_idx];
 
+        # Display game information
+        print("Player $cur_player->{name}'s turn.\n");
+
+        # Fixed cost of each round
+        # TODO: $200 or remainging balance?
+        $cur_player->payDue();
+
+        # If in Jail
+        if ($cur_player->{num_rounds_in_jail} > 0) {
+            $cur_player->move(0);
+            $cur_round++;
+            print("Player $cur_player->{name} is in jail.\n");
+            next;
+        }
+
+        # Ask if player wants to throws two dice
+        print("Pay \$500 to throw two dice? [y/n]\n");
+        my $choice = "";
+        while ($choice ne "y" && $choice ne "n") {
+            $choice = <STDIN>;
+            chomp $choice;
+            if ($choice eq "y") {
+                if ($cur_player->haveEnoughBalance(500, 0.05)) {
+                    local $num_dices = 2;
+                    local $Player::due = 500;
+                    local $Player::handling_fee_rate = 0.05;
+                    $cur_player->payDue();
+                } else {
+                    print("You do not have enough money to throw two dice!\n");
+                }
+            }
+        }
+
+        # Throw the dice
+        my $points_of_dice = throwDice();
+        print("Points of dice: $points_of_dice");
+        $cur_player->move($points_of_dice);
+        my $pos = $cur_player->{position};
+        $game_board[$pos]->stepOn();
+        $cur_round++;
     }
+    my $winner = $players[$cur_round % 2];
+    print("Game over! winner: $winner->{name}.\n");
 }
 
 main();

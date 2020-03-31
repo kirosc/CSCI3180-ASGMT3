@@ -47,4 +47,10 @@ sub printAsset{
     print("Player $self->{name}'s money: $self->{money}\n");
 }
 
+sub haveEnoughBalance {
+    my ( $self, $amount, $handling_fee_rate ) = @_;
+    my $total = $amount * (1 + $handling_fee_rate);
+    return $self->{money} >= $total;
+}
+
 1;

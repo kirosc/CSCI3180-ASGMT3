@@ -15,9 +15,7 @@ sub print {
 }
 
 sub stepOn {
-
-    # ...
-
+    local $Player::income = 2000;
     $main::cur_player->payDue();
     print("You received \$2000 from the Bank!\n");
 }
